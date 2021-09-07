@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const QuizCode = require("../models/QuizCode"); // QuizCode Schema
+const Questions = require("../models/Questions"); // Questions Schema
 const fetchuser = require("../middleware/fetchuser");
 
 // ROUTE 1 : Check QuizCode Using GET "/api/quizcode/check/:quizcode". Require Login
@@ -78,13 +79,17 @@ router.delete("/delete/:quizcode", fetchuser, async (req, res) => {
     if (!quizcode) {
       return res.status(404).json({ error: "Not Found" });
     }
-
     if (quizcode.user.toString() !== req.user.id) {
       return res.status(401).json({ error: "Not Allowed" });
     }
 
+    let question = await Questions.deleteMany({ quizcode: quizcode.quizcode });
+
     quizcode = await QuizCode.findByIdAndDelete(quizcode.id);
-    res.json({ Success: "QuiozCode Deleted", quizcode: req.params.quizcode });
+    res.json({
+      Success: "QuiozCode Deleted",
+      quizcode: req.params.quizcode,
+    });
   } catch (error) {
     // Catch Block For Any Error in MongoDB or above code
     console.error(error);
