@@ -39,8 +39,8 @@ router.post(
   [
     // Validation - Body
     body("quizcode")
-      .isLength({ min: 5 })
-      .withMessage("The QuizCode Should Be Atleast 5 characters"),
+      .isLength({ min: 5, max: 5 })
+      .withMessage("The QuizCode Should Be 5 characters"),
   ],
   async (req, res) => {
     try {
@@ -49,9 +49,11 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
-      const quizCodeDataObject = await QuizCode.findOne({quizcode:req.body.quizcode});
-      if(quizCodeDataObject){
-        return res.status(400).json({error:"Quiz Code Already Exists"})
+      const quizCodeDataObject = await QuizCode.findOne({
+        quizcode: req.body.quizcode,
+      });
+      if (quizCodeDataObject) {
+        return res.status(400).json({ error: "Quiz Code Already Exists" });
       }
       const { quizcode } = req.body;
       const quizcodeData = new QuizCode({
@@ -72,7 +74,7 @@ router.post(
 // ROUTE 4 : Delete Quiz Code DELETE "/api/quizcode/delete/:quizcode". Require Login
 router.delete("/delete/:quizcode", fetchuser, async (req, res) => {
   try {
-    let quizcode = await QuizCode.findOne({quizcode:req.params.quizcode});
+    let quizcode = await QuizCode.findOne({ quizcode: req.params.quizcode });
     if (!quizcode) {
       return res.status(404).json({ error: "Not Found" });
     }
@@ -82,7 +84,7 @@ router.delete("/delete/:quizcode", fetchuser, async (req, res) => {
     }
 
     quizcode = await QuizCode.findByIdAndDelete(quizcode.id);
-    res.json({ Success: "QuiozCode Deleted", quizcode:req.params.quizcode });
+    res.json({ Success: "QuiozCode Deleted", quizcode: req.params.quizcode });
   } catch (error) {
     // Catch Block For Any Error in MongoDB or above code
     console.error(error);

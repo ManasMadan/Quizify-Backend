@@ -5,17 +5,22 @@ const Questions = require("../models/Questions"); // Questions Schema
 const fetchuser = require("../middleware/fetchuser");
 const fetchquizcode = require("../middleware/fetchquizcode");
 
-// ROUTE 1 : Fetch All Questions Using GET "/api/questions/fetchallquestions". Require Login
-router.get("/fetchallquestions", fetchuser,fetchquizcode, async (req, res) => {
-  try {
-    const questions = await Questions.find({ quizcode: req.quizcode });
-    res.json(questions);
-  } catch (error) {
-    // Catch Block For Any Error in MongoDB or above code
-    console.error(error);
-    res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+// ROUTE 1 : Fetch All Questions Using GET "/api/questions/fetchallquestions/:quizcode". Require Login
+router.get(
+  "/fetchallquestions/:quizcode",
+  fetchuser,
+  fetchquizcode,
+  async (req, res) => {
+    try {
+      const questions = await Questions.find({ quizcode: req.params.quizcode });
+      res.json(questions);
+    } catch (error) {
+      // Catch Block For Any Error in MongoDB or above code
+      console.error(error);
+      res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+    }
   }
-});
+);
 
 // ROUTE 2 : Create Question Using POST "/api/questions/addquestion". Require Login
 router.post(
@@ -25,9 +30,13 @@ router.post(
   [
     // Validation - Body
     body("questionType").isString().withMessage("Not A Valid Question Type"),
-    body("questionStatement").isString().withMessage("Not A Valid Question Statement"),
-    
-    body("questionMarks").isNumeric().withMessage("Question Marks Must Be A Number"),
+    body("questionStatement")
+      .isString()
+      .withMessage("Not A Valid Question Statement"),
+
+    body("questionMarks")
+      .isNumeric()
+      .withMessage("Question Marks Must Be A Number"),
   ],
   async (req, res) => {
     try {
@@ -37,32 +46,36 @@ router.post(
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { questionType, questionStatement, questionOptions, questionMarks } = req.body;
+      const {
+        questionType,
+        questionStatement,
+        questionOptions,
+        questionMarks,
+      } = req.body;
       const quizcode = req.quizcode;
       let question;
 
-      if(questionOptions === []){
+      if (questionOptions === []) {
         question = new Questions({
           questionType,
           questionStatement,
           questionMarks,
           quizcode,
-          user:req.user.id
+          user: req.user.id,
         });
-      }else{
+      } else {
         question = new Questions({
           questionType,
           questionStatement,
           questionOptions,
           questionMarks,
           quizcode,
-          user:req.user.id
-
+          user: req.user.id,
         });
       }
-        
-      const saveQuestion = await question.save()
-      res.json(saveQuestion)
+
+      const saveQuestion = await question.save();
+      res.json(saveQuestion);
     } catch (error) {
       // Catch Block For Any Error in MongoDB or above code
       console.error(error);
@@ -79,9 +92,13 @@ router.put(
   [
     // Validation - Body
     body("questionType").isString().withMessage("Not A Valid Question Type"),
-    body("questionStatement").isString().withMessage("Not A Valid Question Statement"),
-    
-    body("questionMarks").isNumeric().withMessage("Question Marks Must Be A Number"),
+    body("questionStatement")
+      .isString()
+      .withMessage("Not A Valid Question Statement"),
+
+    body("questionMarks")
+      .isNumeric()
+      .withMessage("Question Marks Must Be A Number"),
   ],
   async (req, res) => {
     try {
@@ -91,25 +108,34 @@ router.put(
         return res.status(400).json({ errors: errors.array() });
       }
 
-      console.log(req.params.id)
-      let question = await Questions.findById(req.params.id)
-      if(!question){
-        return res.status(404).json({error:"Not Found"})
+      let question = await Questions.findById(req.params.id);
+      if (!question) {
+        return res.status(404).json({ error: "Not Found" });
       }
 
-      if(question.user.toString() !== req.user.id){
-        return res.status(401).json({error:"Not Allowed"})
+      if (question.user.toString() !== req.user.id) {
+        return res.status(401).json({ error: "Not Allowed" });
       }
 
-      const { questionType, questionStatement, questionOptions, questionMarks } = req.body;
-      const newQuestion = {questionType,questionStatement,questionMarks}
-      if(questionOptions){newQuestion.questionOptions = questionOptions};
+      const {
+        questionType,
+        questionStatement,
+        questionOptions,
+        questionMarks,
+      } = req.body;
+      const newQuestion = { questionType, questionStatement, questionMarks };
+      if (questionOptions) {
+        newQuestion.questionOptions = questionOptions;
+      }
 
-      question = await Questions.findByIdAndUpdate(req.params.id,{$set:newQuestion},{new:true})
+      question = await Questions.findByIdAndUpdate(
+        req.params.id,
+        { $set: newQuestion },
+        { new: true }
+      );
 
-
-      const saveQuestion = await question.save()
-      res.json(saveQuestion)
+      const saveQuestion = await question.save();
+      res.json(saveQuestion);
     } catch (error) {
       // Catch Block For Any Error in MongoDB or above code
       console.error(error);
@@ -119,29 +145,25 @@ router.put(
 );
 
 // ROUTE 4 : Delete Question Using DELETE "/api/question/delete/:id". Require Login
-router.delete(
-  "/delete/:id",
-  fetchuser,
-  async (req, res) => {
-    try {
-      let question = await Questions.findById(req.params.id)
-      if(!question){
-        return res.status(404).json({error:"Not Found"})
-      }
-
-      if(question.user.toString() !== req.user.id){
-        return res.status(401).json({error:"Not Allowed"})
-      }
-
-      question = await Questions.findByIdAndDelete(req.params.id)
-
-      res.json({"Sucess":"Question has been deleted",question})
-    } catch (error) {
-      // Catch Block For Any Error in MongoDB or above code
-      console.error(error);
-      res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+router.delete("/delete/:id", fetchuser, async (req, res) => {
+  try {
+    let question = await Questions.findById(req.params.id);
+    if (!question) {
+      return res.status(404).json({ error: "Not Found" });
     }
+
+    if (question.user.toString() !== req.user.id) {
+      return res.status(401).json({ error: "Not Allowed" });
+    }
+
+    question = await Questions.findByIdAndDelete(req.params.id);
+
+    res.json({ Sucess: "Question has been deleted", question });
+  } catch (error) {
+    // Catch Block For Any Error in MongoDB or above code
+    console.error(error);
+    res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
   }
-);
+});
 
 module.exports = router;
