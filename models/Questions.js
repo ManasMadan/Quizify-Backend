@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const QuestionSchema = new Schema({
-  user:{
-    type:mongoose.Schema.Types.ObjectId,
-    ref:'user',
-    required:true,
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+    required: true,
   },
-  quizcode:{
+  quizcode: {
     type: String,
     required: true,
   },

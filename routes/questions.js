@@ -123,7 +123,11 @@ router.put(
         questionOptions,
         questionMarks,
       } = req.body;
-      const newQuestion = { questionType, questionStatement, questionMarks };
+      const newQuestion = {
+        questionType,
+        questionStatement,
+        questionMarks,
+      };
       if (questionOptions) {
         newQuestion.questionOptions = questionOptions;
       }
