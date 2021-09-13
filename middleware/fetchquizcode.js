@@ -14,7 +14,11 @@ const fetchquizcode = async (req, res, next) => {
     if (!data) {
       return res.status(404).json({ error: "Not Found" });
     }
+    if (data.deleted) {
+      return res.status(404).json({ error: "Quizcode has been deleted" });
+    }
     req.quizcode = data[0].quizcode;
+    req.quizcodeDeleted = data[0].deleted;
     next(); // Run Next Function
   } catch (error) {
     res.status(401).send({ error: "Enter A Valid Quizcode" });

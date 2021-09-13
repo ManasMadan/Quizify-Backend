@@ -12,7 +12,9 @@ router.get(
   fetchquizcode,
   async (req, res) => {
     try {
-      const questions = await Questions.find({ quizcode: req.params.quizcode });
+      const questions = await Questions.find({
+        quizcode: req.params.quizcode,
+      }).select("-correctAnswers -user");
       res.json(questions);
     } catch (error) {
       // Catch Block For Any Error in MongoDB or above code

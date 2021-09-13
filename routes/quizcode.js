@@ -76,16 +76,18 @@ router.post(
 router.delete("/delete/:quizcode", fetchuser, async (req, res) => {
   try {
     let quizcode = await QuizCode.findOne({ quizcode: req.params.quizcode });
-    if (!quizcode) {
+    if (!quizcode || quizcode.deleted) {
       return res.status(404).json({ error: "Not Found" });
     }
+
     if (quizcode.user.toString() !== req.user.id) {
       return res.status(401).json({ error: "Not Allowed" });
     }
 
-    let question = await Questions.deleteMany({ quizcode: quizcode.quizcode });
+    quizcode.deleted = true;
 
-    quizcode = await QuizCode.findByIdAndDelete(quizcode.id);
+    quizcode = await QuizCode.findByIdAndUpdate(quizcode.id, quizcode);
+
     res.json({
       Success: "QuiozCode Deleted",
       quizcode: req.params.quizcode,

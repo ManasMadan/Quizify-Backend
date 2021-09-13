@@ -24,6 +24,12 @@ router.post(
 
     // Try Catch Block
     try {
+      console.log(req.quizcodeDeleted);
+
+      if (req.quizcodeDeleted) {
+        res.status(400).json({ error: "Quizcode has been deleted" });
+      }
+
       const { answers } = req.body;
       const quizcode = req.quizcode;
 
@@ -51,5 +57,19 @@ router.post(
     }
   }
 );
+
+// ROUTE 2 : Get All Submissions of a user: GET "/api/submissions/getallsubmissions". Require Login
+router.get("/getallsubmissions", fetchuser, async (req, res) => {
+  try {
+    const mysubmissions = await Submissions.find({
+      user: req.user.id,
+    });
+    res.json(mysubmissions);
+  } catch (error) {
+    // Catch Block For Any Error in MongoDB or above code
+    console.error(error);
+    res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+  }
+});
 
 module.exports = router;
