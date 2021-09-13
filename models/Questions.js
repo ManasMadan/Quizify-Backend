@@ -26,6 +26,10 @@ const QuestionSchema = new Schema({
     type: Number,
     required: true,
   },
+  correctAnswers: {
+    type: Array,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("questions", QuestionSchema);

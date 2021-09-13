@@ -51,6 +51,7 @@ router.post(
         questionStatement,
         questionOptions,
         questionMarks,
+        correctAnswers,
       } = req.body;
       const quizcode = req.quizcode;
       let question;
@@ -61,6 +62,7 @@ router.post(
           questionStatement,
           questionMarks,
           quizcode,
+          correctAnswers,
           user: req.user.id,
         });
       } else {
@@ -70,6 +72,7 @@ router.post(
           questionOptions,
           questionMarks,
           quizcode,
+          correctAnswers,
           user: req.user.id,
         });
       }
@@ -122,11 +125,13 @@ router.put(
         questionStatement,
         questionOptions,
         questionMarks,
+        correctAnswers,
       } = req.body;
       const newQuestion = {
         questionType,
         questionStatement,
         questionMarks,
+        correctAnswers,
       };
       if (questionOptions) {
         newQuestion.questionOptions = questionOptions;
