@@ -137,4 +137,23 @@ router.post("/getuser", fetchuser, async (req, res) => {
   }
 });
 
+// ROUTE 4 : Get User Details Using ID : GET "/api/auth/getuserdetailsid". Require Login
+router.get("/getuserdetailsid/:userid", fetchuser, async (req, res) => {
+  // Try Catch Block
+  try {
+    const userId = req.params.userid;
+
+    const user = await User.findById(userId).select("-password");
+
+    if (!user) {
+      return res.status(400).json({ error: "No User Found" }); // Send Bad Request
+    }
+
+    res.json(user);
+  } catch (error) {
+    // Catch Block For Any Error in MongoDB or above code
+    res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+  }
+});
+
 module.exports = router;

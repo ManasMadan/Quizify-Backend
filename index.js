@@ -15,6 +15,8 @@ app.use(express.json());
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/quizcode", require("./routes/quizcode"));
 app.use("/api/questions", require("./routes/questions"));
+app.use("/api/submissions", require("./routes/submissions"));
+
 app.get("/", (req, res) =>
   res.json({
     "/api/auth/createuser":
