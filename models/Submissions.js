@@ -7,6 +7,10 @@ const Submissions = new Schema({
     ref: "user",
     required: true,
   },
+  email: {
+    type: String,
+    required: true,
+  },
   quizcode: {
     type: String,
     required: true,

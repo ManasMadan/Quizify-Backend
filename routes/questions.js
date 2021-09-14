@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const Questions = require("../models/Questions"); // Questions Schema
+const Submissions = require("../models/Submissions"); // Submissions Schema
 const fetchuser = require("../middleware/fetchuser");
 const fetchquizcode = require("../middleware/fetchquizcode");
 
@@ -24,7 +25,29 @@ router.get(
   }
 );
 
-// ROUTE 2 : Create Question Using POST "/api/questions/addquestion". Require Login
+// ROUTE 2 : Fetch All Questions With Correct Answers Using POST "/api/questions/fetchallquestionanswers/:quizcode". Require Login
+router.post(
+  "/fetchallquestionanswers/:quizcode",
+  fetchuser,
+  async (req, res) => {
+    try {
+      const submission = Submissions.findOne({ user: req.user.id });
+      if (!submission) {
+        res.status(400).json({ error: "Submit To Continue" });
+      }
+      const questions = await Questions.find({
+        quizcode: req.params.quizcode,
+      }).select("-user");
+      res.json(questions);
+    } catch (error) {
+      // Catch Block For Any Error in MongoDB or above code
+      console.error(error);
+      res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+    }
+  }
+);
+
+// ROUTE 3 : Create Question Using POST "/api/questions/addquestion". Require Login
 router.post(
   "/addquestion",
   fetchuser,
@@ -89,7 +112,7 @@ router.post(
   }
 );
 
-// ROUTE 3 : Update Question Using PUT "/api/question/updatequestion/:id". Require Login
+// ROUTE 4 : Update Question Using PUT "/api/question/updatequestion/:id". Require Login
 router.put(
   "/updatequestion/:id",
   fetchuser,
@@ -155,7 +178,7 @@ router.put(
   }
 );
 
-// ROUTE 4 : Delete Question Using DELETE "/api/question/delete/:id". Require Login
+// ROUTE 5 : Delete Question Using DELETE "/api/question/delete/:id". Require Login
 router.delete("/delete/:id", fetchuser, async (req, res) => {
   try {
     let question = await Questions.findById(req.params.id);

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const Submissions = require("../models/Submissions"); // Submissions Schema
+const SubmittedBy = require("../models/SubmittedBy"); // Schema
 const fetchuser = require("../middleware/fetchuser");
 const fetchquizcode = require("../middleware/fetchquizcode");
 
@@ -13,6 +14,7 @@ router.post(
   [
     // Validation - Body
     body("answers").exists().withMessage("Body Incomplete - answers array"),
+    body("email").isEmail().withMessage("Enter A Valid Email"),
   ],
 
   async (req, res) => {
@@ -28,7 +30,12 @@ router.post(
         res.status(400).json({ error: "Quizcode has been deleted" });
       }
 
-      const { answers } = req.body;
+      const submitted = await SubmittedBy.findOne({ user: req.user.id });
+      if (!submitted) {
+        return res.status(400).json({ error: "Submit To Continue" });
+      }
+
+      const { answers, email } = req.body;
       const quizcode = req.quizcode;
 
       let submission = await Submissions.findOne({ user: req.user.id });
@@ -41,6 +48,7 @@ router.post(
         user: req.user.id,
         quizcode,
         answers,
+        email,
       });
 
       res.json({ submission });

@@ -16,6 +16,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/quizcode", require("./routes/quizcode"));
 app.use("/api/questions", require("./routes/questions"));
 app.use("/api/submissions", require("./routes/submissions"));
+app.use("/api/submissions", require("./routes/submittedby"));
 
 app.get("/", (req, res) =>
   res.json({
