@@ -99,4 +99,31 @@ router.delete("/delete/:quizcode", fetchuser, async (req, res) => {
   }
 });
 
+// ROUTE 5 : Delete Quiz Code DELETE "/api/quizcode/undelete/:quizcode". Require Login
+router.delete("/undelete/:quizcode", fetchuser, async (req, res) => {
+  try {
+    let quizcode = await QuizCode.findOne({ quizcode: req.params.quizcode });
+    if (!quizcode || quizcode.deleted) {
+      return res.status(404).json({ error: "Not Found" });
+    }
+
+    if (quizcode.user.toString() !== req.user.id) {
+      return res.status(401).json({ error: "Not Allowed" });
+    }
+
+    quizcode.deleted = false;
+
+    quizcode = await QuizCode.findByIdAndUpdate(quizcode.id, quizcode);
+
+    res.json({
+      Success: "QuiozCode Revived",
+      quizcode: req.params.quizcode,
+    });
+  } catch (error) {
+    // Catch Block For Any Error in MongoDB or above code
+    console.error(error);
+    res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+  }
+});
+
 module.exports = router;
