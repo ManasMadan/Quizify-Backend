@@ -33,6 +33,10 @@ router.post(
 
       let submission = await Submissions.findOne({ user: req.user.id });
 
+      if (submission) {
+        return res.status(400).json({ error: "You Have Already Submitted" });
+      }
+
       submission = await Submissions.create({
         user: req.user.id,
         quizcode,
