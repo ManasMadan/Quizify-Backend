@@ -24,8 +24,6 @@ router.post(
 
     // Try Catch Block
     try {
-      console.log(req.quizcodeDeleted);
-
       if (req.quizcodeDeleted) {
         res.status(400).json({ error: "Quizcode has been deleted" });
       }
@@ -35,14 +33,6 @@ router.post(
 
       let submission = await Submissions.findOne({ user: req.user.id });
 
-      // If User Exists
-      if (submission) {
-        return res
-          .status(400)
-          .json({ error: "Sorry You Have Already Submitted" }); // Send Bad Request
-      }
-
-      // If Submission has not been made
       submission = await Submissions.create({
         user: req.user.id,
         quizcode,

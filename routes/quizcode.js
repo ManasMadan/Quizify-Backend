@@ -103,7 +103,7 @@ router.delete("/delete/:quizcode", fetchuser, async (req, res) => {
 router.delete("/undelete/:quizcode", fetchuser, async (req, res) => {
   try {
     let quizcode = await QuizCode.findOne({ quizcode: req.params.quizcode });
-    if (!quizcode || quizcode.deleted) {
+    if (!quizcode || !quizcode.deleted) {
       return res.status(404).json({ error: "Not Found" });
     }
 
