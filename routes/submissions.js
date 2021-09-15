@@ -77,4 +77,25 @@ router.get("/getallsubmissions", fetchuser, async (req, res) => {
   }
 });
 
+// ROUTE 3 : Get All Submissions of a quizcode: GET "/api/submissions/quizcodesubmissions/:quizcode". Require Login
+router.get(
+  "/quizcodesubmissions/:quizcode",
+  fetchuser,
+  fetchquizcode,
+  async (req, res) => {
+    try {
+      if (!req.quizcodeDeleted) {
+        const mysubmissions = await Submissions.find({
+          quizcode: req.quizcode,
+        });
+        res.json(mysubmissions);
+      }
+    } catch (error) {
+      // Catch Block For Any Error in MongoDB or above code
+      console.error(error);
+      res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+    }
+  }
+);
+
 module.exports = router;
