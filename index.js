@@ -7,9 +7,11 @@ dotenv.config();
 connectToMongo();
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT;
 
-app.use(cors());
+if (process.env.NODE_ENV === "development") {
+  app.use(cors());
+}
 app.use(express.json());
 
 app.use("/api/auth", require("./routes/auth"));
@@ -38,5 +40,5 @@ app.get("/", (req, res) =>
 );
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`Quizify listening at http://localhost:${port}`);
 });

@@ -13,10 +13,7 @@ const fetchuser = (req, res, next) => {
 
   // Try Catch Block To Verify Token
   try {
-    const data = jwt.verify(
-      token,
-      process.env.JWT_SECRET || "adshcbhabcsdahcbhsda"
-    );
+    const data = jwt.verify(token, process.env.JWT_SECRET);
     req.user = data.user;
     next(); // Run Next Function
   } catch (error) {
