@@ -19,6 +19,14 @@ const Submissions = new Schema({
     type: Array,
     required: true,
   },
+  marksAwarded: {
+    type: Number,
+    required: true,
+  },
+  totalMarks: {
+    type: Number,
+    required: true,
+  },
   Date: {
     type: Date,
     default: Date.now,

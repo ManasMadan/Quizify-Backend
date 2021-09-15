@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const Questions = require("../models/Questions"); // Questions Schema
 const Submissions = require("../models/Submissions"); // Submissions Schema
+const Quizcode = require("../models/QuizCode"); // Quizcode Schema
 const fetchuser = require("../middleware/fetchuser");
 const fetchquizcode = require("../middleware/fetchquizcode");
 
@@ -32,8 +33,9 @@ router.post(
   async (req, res) => {
     try {
       const submission = Submissions.findOne({ user: req.user.id });
-      if (!submission) {
-        res.status(400).json({ error: "Submit To Continue" });
+      const quizcode = Quizcode.findOne({ quizcode: req.params.quizcode });
+      if (!submission && quizcode.user !== req.user.id) {
+        return res.status(400).json({ error: "Submit To Continue" });
       }
       const questions = await Questions.find({
         quizcode: req.params.quizcode,

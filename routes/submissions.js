@@ -15,6 +15,7 @@ router.post(
     // Validation - Body
     body("answers").exists().withMessage("Body Incomplete - answers array"),
     body("email").isEmail().withMessage("Enter A Valid Email"),
+    body("totalMarks").isNumeric().withMessage("Enter Total Marks"),
   ],
 
   async (req, res) => {
@@ -35,7 +36,7 @@ router.post(
         return res.status(400).json({ error: "Submit To Continue" });
       }
 
-      const { answers, email } = req.body;
+      const { answers, email, totalMarks, marksAwarded } = req.body;
       const quizcode = req.quizcode;
 
       let submission = await Submissions.findOne({ user: req.user.id });
@@ -48,6 +49,8 @@ router.post(
         user: req.user.id,
         quizcode,
         answers,
+        marksAwarded,
+        totalMarks,
         email,
       });
 
