@@ -7,6 +7,10 @@ const Submissions = new Schema({
     ref: "user",
     required: true,
   },
+  name: {
+    type: String,
+    required: true,
+  },
   email: {
     type: String,
     required: true,
