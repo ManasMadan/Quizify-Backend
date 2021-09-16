@@ -7,11 +7,13 @@ dotenv.config();
 connectToMongo();
 
 const app = express();
-const port = process.env.PORT;
+let port;
 
 if (process.env.NODE_ENV === "production") {
+  port = process.env.PORT;
   app.use(cors({ origin: "https://quizify-manas.netlify.app" }));
 } else {
+  port = 5000;
   app.use(cors());
 }
 
