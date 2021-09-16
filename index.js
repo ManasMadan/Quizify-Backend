@@ -9,7 +9,12 @@ connectToMongo();
 const app = express();
 const port = process.env.PORT;
 
-app.use(cors({ origin: "https://quizify-manas.netlify.app" }));
+if (process.env.NODE_ENV === "production") {
+  app.use(cors({ origin: "https://quizify-manas.netlify.app" }));
+} else {
+  app.use(cors());
+}
+
 app.use(express.json());
 
 app.use("/api/auth", require("./routes/auth"));
@@ -25,5 +30,5 @@ app.get("/", (req, res) =>
 );
 
 app.listen(port, () => {
-  console.log(`Quizify listening at http://localhost:${port}`);
+  console.log(`Quizify listening at Port ${port}`);
 });

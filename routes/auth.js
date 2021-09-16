@@ -8,7 +8,12 @@ const fetchuser = require("../middleware/fetchuser");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET;
+let JWT_SECRET;
+if (process.env.NODE_ENV === "production") {
+  JWT_SECRET = process.env.JWT_SECRET;
+} else {
+  JWT_SECRET = "sssh";
+}
 
 // ROUTE 1 : Create A User using: POST "/api/auth/createuser". Doesn't Require Login
 router.post(
