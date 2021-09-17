@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const { body, validationResult } = require("express-validator");
 const QuizCode = require("../models/QuizCode"); // QuizCode Schema
-const Questions = require("../models/Questions"); // Questions Schema
 const fetchuser = require("../middleware/fetchuser");
 
 // ROUTE 1 : Check QuizCode Using GET "/api/quizcode/check/:quizcode". Require Login

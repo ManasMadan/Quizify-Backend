@@ -57,7 +57,7 @@ router.post(
 
       user = await User.create({
         name: name,
-        email: email,
+        email: email.toLowerCase(),
         password: secPass,
       });
 
@@ -94,9 +94,10 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    let { email, password } = req.body;
     // Try Catch Block
     try {
+      email = email.toLowerCase();
       let user = await User.findOne({ email });
 
       // If User Doesn't Exists
