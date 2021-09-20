@@ -18,7 +18,7 @@ router.post(
 
       const quizcode = req.quizcode;
 
-      let submission = await SubmittedBy.findOne({ user: req.user.id });
+      let submission = await SubmittedBy.findOne({ quizcode });
 
       if (submission) {
         return res.status(400).json({ error: "You Have Already Submitted" });
