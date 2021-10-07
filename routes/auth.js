@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const nodemailer = require("nodemailer");
 const { body, validationResult } = require("express-validator");
 const User = require("../models/User"); // User Schema
 const bcrypt = require("bcrypt");
@@ -59,16 +60,37 @@ router.post(
         name: name,
         email: email.toLowerCase(),
         password: secPass,
+        verified: false,
       });
 
-      const data = {
-        user: {
-          id: user.id,
+      // Send Email
+      // SMTP SETUP
+      const smtpTransport = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.AUTH_EMAIL_ID,
+          pass: process.env.AUTH_EMAIL_PASSWORD,
         },
+      });
+
+      const link = `${process.env.APP_URL}/#/verify/${jwt.sign(
+        { id: user.id },
+        JWT_SECRET,
+        { expiresIn: "10m" }
+      )}`;
+      const mailOptions = {
+        to: email.toLowerCase(),
+        subject: "Please confirm your Email account",
+        html: `Please Click on the link to verify your email. ${link} Click here to verify`,
       };
 
-      const authtoken = jwt.sign(data, JWT_SECRET);
-      res.json({ authtoken });
+      smtpTransport.sendMail(mailOptions, function (error, response) {
+        if (error) {
+          return res.status(400).json(error);
+        } else {
+          return res.json({ success: "Email Verification Link Sent" });
+        }
+      });
     } catch (error) {
       // Catch Block For Any Error in MongoDB or above code
       console.error(error);
@@ -77,7 +99,36 @@ router.post(
   }
 );
 
-// ROUTE 2 : Login A User using: POST "/api/auth/login". Doesn't Require Login
+// ROUTE 2 : Verify User Email: GET "/api/auth/verifyuser/userid". Doesn't Require Login
+router.get("/verifyuser/:userid", async (req, res) => {
+  // Try Catch Block
+  try {
+    const data = jwt.verify(req.params.userid, JWT_SECRET);
+
+    const userId = data.id;
+    let user = await User.findById(userId);
+
+    // If User Does Not Exists
+    if (!user || user.verified) {
+      return res.status(400).json({ error: "Invalid Link" }); // Send Bad Request
+    }
+
+    user.verified = true;
+    user = await User.findByIdAndUpdate(userId, {
+      $set: user,
+    });
+
+    res.json({ success: "Email Verified Succesfully" });
+  } catch (error) {
+    if (error.message === "jwt expired") {
+      return res.status(400).json({ error: "Token Expired" });
+    }
+    // Catch Block For Any Error in MongoDB or above code
+    res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+  }
+});
+
+// ROUTE 3 : Login A User using: POST "/api/auth/login". Doesn't Require Login
 router.post(
   "/login",
 
@@ -105,6 +156,10 @@ router.post(
         return res.status(400).json({ error: "Wrong Credentials" });
       }
 
+      if (!user.verified) {
+        return res.status(400).json({ error: "Verify Email To Continue" });
+      }
+
       const passwordCompare = await bcrypt.compare(password, user.password);
       if (!passwordCompare) {
         return res.status(400).json({ error: "Wrong Credentials" });
@@ -126,7 +181,7 @@ router.post(
   }
 );
 
-// ROUTE 3 : Get loggedIn User Details Using authtoken: POST "/api/auth/getuser". Require Login
+// ROUTE 4 : Get loggedIn User Details Using authtoken: POST "/api/auth/getuser". Require Login
 router.post("/getuser", fetchuser, async (req, res) => {
   // Try Catch Block
   try {
@@ -143,7 +198,7 @@ router.post("/getuser", fetchuser, async (req, res) => {
   }
 });
 
-// ROUTE 4 : Get User Details Using ID : GET "/api/auth/getuserdetailsid". Require Login
+// ROUTE 5 : Get User Details Using ID : GET "/api/auth/getuserdetailsid". Require Login
 router.get("/getuserdetailsid/:userid", fetchuser, async (req, res) => {
   // Try Catch Block
   try {
