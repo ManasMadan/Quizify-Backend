@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const fetchuser = require("../middleware/fetchuser");
 const dotenv = require("dotenv");
+const htmlGenerator = require("./html_template").htmlGenerator;
 dotenv.config();
 
 let JWT_SECRET;
@@ -78,10 +79,11 @@ router.post(
         JWT_SECRET,
         { expiresIn: "10m" }
       )}`;
+      console.log(htmlGenerator(link));
       const mailOptions = {
         to: email.toLowerCase(),
         subject: "Please confirm your Email account",
-        html: `Please Click on the link to verify your email. ${link} Click here to verify`,
+        html: htmlGenerator(link),
       };
 
       smtpTransport.sendMail(mailOptions, function (error, response) {
