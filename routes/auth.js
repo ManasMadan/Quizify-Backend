@@ -6,9 +6,8 @@ const User = require("../models/User"); // User Schema
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const fetchuser = require("../middleware/fetchuser");
-const dotenv = require("dotenv");
+require("dotenv").config();
 const htmlGenerator = require("./html_template").htmlGenerator;
-dotenv.config();
 
 let JWT_SECRET;
 if (process.env.NODE_ENV === "production") {
@@ -79,7 +78,6 @@ router.post(
         JWT_SECRET,
         { expiresIn: "10m" }
       )}`;
-      console.log(htmlGenerator(link));
       const mailOptions = {
         to: email.toLowerCase(),
         subject: "Please confirm your Email account",
@@ -218,5 +216,62 @@ router.get("/getuserdetailsid/:userid", fetchuser, async (req, res) => {
     res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
   }
 });
+
+// ROUTE 6 : Send Verification Email : POST "/api/auth/sendverificationemail". No Login Required
+router.post(
+  "/sendverificationemail",
+  [
+    // Validation - Body
+    body("email").isEmail().withMessage("Enter A Valid Email"),
+  ],
+  async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      let user = await User.findOne({ email: email });
+
+      // If User Does Not Exists
+      if (!user) {
+        return res.status(400).json({ error: "No User Found" }); // Send Bad Request
+      }
+      // If User is already verified
+      if (user.verified) {
+        return res.status(400).json({ error: "User Already Verified" }); // Send Bad Request
+      }
+
+      // Send Email
+      // SMTP SETUP
+      const smtpTransport = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.AUTH_EMAIL_ID,
+          pass: process.env.AUTH_EMAIL_PASSWORD,
+        },
+      });
+
+      const link = `${process.env.APP_URL}/#/verify/${jwt.sign(
+        { id: user.id },
+        JWT_SECRET,
+        { expiresIn: "10m" }
+      )}`;
+      const mailOptions = {
+        to: email.toLowerCase(),
+        subject: "Please confirm your Email account",
+        html: htmlGenerator(link),
+      };
+
+      smtpTransport.sendMail(mailOptions, function (error, response) {
+        if (error) {
+          return res.status(400).json(error);
+        } else {
+          return res.json({ success: "Email Verification Link Sent" });
+        }
+      });
+    } catch (error) {
+      // Catch Block For Any Error in MongoDB or above code
+      res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+    }
+  }
+);
 
 module.exports = router;
