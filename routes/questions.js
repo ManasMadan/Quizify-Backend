@@ -64,6 +64,9 @@ router.post(
     body("questionMarks")
       .isNumeric()
       .withMessage("Question Marks Must Be A Number"),
+    body("isMathEquation")
+      .isBoolean()
+      .withMessage("isMathEquation Needs To Be A Boolean"),
   ],
   async (req, res) => {
     try {
@@ -79,6 +82,7 @@ router.post(
         questionOptions,
         questionMarks,
         correctAnswers,
+        isMathEquation,
       } = req.body;
       const quizcode = req.quizcode;
       let question;
@@ -91,6 +95,7 @@ router.post(
           quizcode,
           correctAnswers,
           user: req.user.id,
+          isMathEquation,
         });
       } else {
         question = new Questions({
@@ -101,6 +106,7 @@ router.post(
           quizcode,
           correctAnswers,
           user: req.user.id,
+          isMathEquation,
         });
       }
 
@@ -129,6 +135,9 @@ router.put(
     body("questionMarks")
       .isNumeric()
       .withMessage("Question Marks Must Be A Number"),
+    body("isMathEquation")
+      .isBoolean()
+      .withMessage("isMathEquation Needs To Be A Boolean"),
   ],
   async (req, res) => {
     try {
@@ -153,12 +162,14 @@ router.put(
         questionOptions,
         questionMarks,
         correctAnswers,
+        isMathEquation,
       } = req.body;
       const newQuestion = {
         questionType,
         questionStatement,
         questionMarks,
         correctAnswers,
+        isMathEquation,
       };
       if (questionOptions) {
         newQuestion.questionOptions = questionOptions;

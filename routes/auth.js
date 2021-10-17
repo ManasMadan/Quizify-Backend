@@ -274,4 +274,7 @@ router.post(
   }
 );
 
+// ROUTE 7 : Send Reset Password Link : POST "/api/auth/sendpasswordresetlink". Login Required
+// ROUTE 8 : Reset Password Using Link : POST "/api/auth/resetpasswordusinglink". Login Required
+
 module.exports = router;

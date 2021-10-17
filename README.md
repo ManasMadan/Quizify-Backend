@@ -50,7 +50,6 @@ To run this project, you will need to add the following environment variables to
 ## Roadmap
 
 - Select -passwords , ids , correct answers and more
-- Improve Auth - Email Verification, Reset Password, Delete Account
 
 ## Tech Stack
 

@@ -7,6 +7,10 @@ const QuestionSchema = new Schema({
     ref: "user",
     required: true,
   },
+  isMathEquation: {
+    type: Boolean,
+    required: true,
+  },
   quizcode: {
     type: String,
     required: true,
