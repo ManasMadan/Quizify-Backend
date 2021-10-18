@@ -177,6 +177,7 @@ router.post(
       const data = {
         user: {
           id: user.id,
+          password: user.password,
         },
       };
 
@@ -195,12 +196,22 @@ router.post("/getuser", fetchuser, async (req, res) => {
   // Try Catch Block
   try {
     const userId = req.user.id;
-    const user = await User.findById(userId).select("-password");
+    const userPassword = req.user.password;
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ error: "No User Found" }); // Send Bad Request
     }
 
-    res.json(user);
+    if (user.password !== userPassword) {
+      return res.status(400).json({ error: "Invalid Token" }); // Send Bad Request
+    }
+    res.json({
+      _id: user.id,
+      name: user.name,
+      email: user.email,
+      verified: user.verified,
+      date: user.date,
+    });
   } catch (error) {
     // Catch Block For Any Error in MongoDB or above code
     res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
