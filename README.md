@@ -4,7 +4,7 @@ Backend For A Online Web Based Quiz App, Where People and Create and Join The Qu
 
 ## Demo
 
-[Live Working Demo Of Site](https://quizify-manas.netlify.app/)
+[Live Working Demo Of Site](https://quizify-manas.web.app/)
 
 ## [Frontend](https://github.com/ManasMadan/Quizify-Frontend)
 
