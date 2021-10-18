@@ -8,7 +8,7 @@
     },
     {
       "label": "Upload To Github",
-      "command": "git add .;git commit -m '${input:commitMessage}';git push origin master",
+      "command": "git add .;git commit -m '${input:commitMessage}';git push origin master;git push heroku master",
       "type": "shell"
     },
     {
