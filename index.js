@@ -10,7 +10,14 @@ let port;
 
 if (process.env.NODE_ENV === "production") {
   port = process.env.PORT;
-  app.use(cors({ origin: "https://quizify-manas.netlify.app" }));
+  app.use(
+    cors({
+      origin: [
+        "https://quizify-manas.netlify.app",
+        "http://192.168.29.118:5000",
+      ],
+    })
+  );
 } else {
   port = 5000;
   app.use(cors());
