@@ -81,7 +81,7 @@ router.post(
       const mailOptions = {
         to: email.toLowerCase(),
         subject: "Please confirm your Email account",
-        html: htmlGenerator(link),
+        html: htmlGenerator(link, "verifyemail"),
       };
 
       smtpTransport.sendMail(mailOptions, function (error, response) {
@@ -120,8 +120,17 @@ router.get("/verifyuser/:userid", async (req, res) => {
 
     res.json({ success: "Email Verified Succesfully" });
   } catch (error) {
+    if (error.message === "jwt malformed") {
+      res.status(500).send({ error: "Invalid Token" });
+      return;
+    }
     if (error.message === "jwt expired") {
-      return res.status(400).json({ error: "Token Expired" });
+      res.status(500).send({ error: "Token Expired" });
+      return;
+    }
+    if (error.message === "invalid signature") {
+      res.status(500).send({ error: "Invalid Token" });
+      return;
     }
     // Catch Block For Any Error in MongoDB or above code
     res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
@@ -226,6 +235,10 @@ router.post(
   ],
   async (req, res) => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
       const { email } = req.body;
 
       let user = await User.findOne({ email: email });
@@ -275,6 +288,145 @@ router.post(
 );
 
 // ROUTE 7 : Send Reset Password Link : POST "/api/auth/sendpasswordresetlink". Login Required
-// ROUTE 8 : Reset Password Using Link : POST "/api/auth/resetpasswordusinglink". Login Required
+router.post(
+  "/sendpasswordresetlink",
+  [
+    // Validation - Body
+    body("email").isEmail().withMessage("Enter A Valid Email"),
+  ],
+  async (req, res) => {
+    try {
+      // If Errors in Validation Send Bad Request
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
 
+      let { email } = req.body;
+      email = email.toLowerCase();
+      let user = await User.findOne({ email });
+
+      // If User Doesn't Exists
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: "No User Associated With This Email" });
+      }
+      if (!user.verified) {
+        return res.status(400).json({ error: "Verify Email To Continue" });
+      }
+
+      const data = jwt.sign(
+        { email, id: user.id, name: user.name },
+        JWT_SECRET,
+        { expiresIn: "10m" }
+      );
+
+      // Send Email
+      // SMTP SETUP
+      const smtpTransport = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.AUTH_EMAIL_ID,
+          pass: process.env.AUTH_EMAIL_PASSWORD,
+        },
+      });
+
+      const link = `${process.env.APP_URL}/#/resetpassword/${data}`;
+      const mailOptions = {
+        to: email,
+        subject: "Password Reset Request",
+        html: htmlGenerator(link, "resetpassword"),
+      };
+
+      smtpTransport.sendMail(mailOptions, function (error, response) {
+        if (error) {
+          return res.status(400).json(error);
+        } else {
+          return res.json({ success: "Password Reset Link Sent" });
+        }
+      });
+    } catch (error) {
+      // Catch Block For Any Error in MongoDB or above code
+      res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+    }
+  }
+);
+// ROUTE 8 : Reset Password Using Link : POST "/api/auth/resetpasswordusinglink". Login Required
+router.post(
+  "/resetpasswordusinglink",
+  [
+    // Validation - Body
+    body("email").isEmail().withMessage("Enter A Valid Email"),
+    body("newpassword")
+      .isLength({ min: 8 })
+      .withMessage("The Password Should Be Atleast 8 characters"),
+    body("token").exists().withMessage("Enter A Valid Token"),
+  ],
+  async (req, res) => {
+    try {
+      // If Errors in Validation Send Bad Request
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const data = jwt.verify(req.body.token, JWT_SECRET);
+      let { email, newpassword } = req.body;
+      email = email.toLowerCase();
+      if (data.email !== email.toLowerCase()) {
+        return res.status(400).json({ error: "Invalid Token" });
+      }
+
+      let user = await User.findOne({ email });
+      // If User Doesn't Exists
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: "No User Associated Found Associated With Email" });
+      }
+      if (data.name !== user.name || data.id !== user.id) {
+        return res.status(400).json({ error: "Invalid Token" });
+      }
+      if (!user.verified) {
+        return res.status(400).json({ error: "Verify Email To Continue" });
+      }
+
+      // If User Exist
+      const salt = await bcrypt.genSalt(10);
+      const secPass = await bcrypt.hash(newpassword, salt);
+
+      user = await User.findOneAndUpdate(
+        user.id,
+        {
+          $set: {
+            name: user.name,
+            email: email,
+            password: secPass,
+            verified: user.verified,
+          },
+        },
+        { new: true }
+      );
+
+      return res.json({ success: "Password Changed" });
+    } catch (error) {
+      console.log(error);
+      if (error.message === "jwt malformed") {
+        res.status(500).send({ error: "Invalid Token" });
+        return;
+      }
+      if (error.message === "jwt expired") {
+        res.status(500).send({ error: "Token Expired" });
+        return;
+      }
+      if (error.message === "invalid signature") {
+        res.status(500).send({ error: "Invalid Token" });
+        return;
+      }
+      // Catch Block For Any Error in MongoDB or above code
+      res.status(500).send("Internal Server Error"); // Status Code - 500 : Internal Server Error
+    }
+  }
+);
 module.exports = router;
