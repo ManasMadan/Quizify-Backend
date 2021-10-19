@@ -407,7 +407,7 @@ router.post(
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(newpassword, salt);
 
-      user = await User.findOneAndUpdate(
+      user = await User.findByIdAndUpdate(
         user.id,
         {
           $set: {
@@ -417,7 +417,7 @@ router.post(
             verified: user.verified,
           },
         },
-        { new: true }
+        { new: false }
       );
 
       return res.json({ success: "Password Changed" });
